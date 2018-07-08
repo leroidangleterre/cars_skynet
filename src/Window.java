@@ -12,18 +12,17 @@ public class Window extends JFrame{
 
 	private static final long serialVersionUID = -6697999408390194121L;
 
-	private GraphicPanel panel;
+	private GraphicPanel graphicPanel;
 	private Toolbar toolbar;
 	private int xMouse, yMouse;
-	// private boolean leftClickActive;
 	private boolean centerClickActive;
 	private boolean rightClickActive;
 
 	private KeyboardListener keyboardListener;
-	
+
 	public Window(){
 		super();
-		
+
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -34,7 +33,6 @@ public class Window extends JFrame{
 
 		this.xMouse = 0;
 		this.yMouse = 0;
-//		this.leftClickActive = false;
 		this.centerClickActive = false;
 		this.rightClickActive = false;
 
@@ -43,31 +41,42 @@ public class Window extends JFrame{
 
 	public Window(GraphicPanel pan){
 		this();
-		this.setPanel(pan);
-		this.keyboardListener = new KeyboardListener(this.panel);
-		this.addKeyListener(this.keyboardListener);
-		this.panel.addKeyListener(this.keyboardListener);
-		this.toolbar.setKeyListener(this.keyboardListener);
+		this.graphicPanel = pan;
+		this.getContentPane().add(this.graphicPanel, BorderLayout.CENTER);
+
+		this.graphicPanel.addMouseListener(new MyMouseListener());
+		this.graphicPanel.addMouseMotionListener(new MyMouseMotionListener());
+		this.graphicPanel.addMouseWheelListener(new MyMouseWheelListener());
+
+		// Only world panels have a toolbar.
+		if (pan instanceof WorldGraphicPanel){
+			WorldGraphicPanel wgp = (WorldGraphicPanel)pan;
+			this.toolbar = new Toolbar(wgp);
+			this.getContentPane().add(this.toolbar, BorderLayout.SOUTH);
+
+			this.keyboardListener = new KeyboardListener(wgp);
+			this.addKeyListener(this.keyboardListener);
+			this.graphicPanel.addKeyListener(this.keyboardListener);
+			this.toolbar.setKeyListener(this.keyboardListener);
+		}
 	}
 
+	public void setPanel(NeuralNetGraphicPanel panel){
 
-	public void setPanel(GraphicPanel pan){
-		this.panel = pan;
-		this.getContentPane().add(this.panel, BorderLayout.CENTER);
-		this.toolbar = new Toolbar(this.panel);
-		this.getContentPane().add(this.toolbar, BorderLayout.SOUTH);
-		
-		this.panel.addMouseListener(new MyMouseListener());
-		this.panel.addMouseMotionListener(new MyMouseMotionListener());
-		this.panel.addMouseWheelListener(new MyMouseWheelListener());
+		this.graphicPanel = panel;
+		this.getContentPane().add(this.graphicPanel, BorderLayout.CENTER);
+
+		this.graphicPanel.addMouseListener(new MyMouseListener());
+		this.graphicPanel.addMouseMotionListener(new MyMouseMotionListener());
+		this.graphicPanel.addMouseWheelListener(new MyMouseWheelListener());
 	}
 
-	/** Change the zoom factor and keep unchanged only the point hovered by the mouse.
-	  */
+	/**
+	 * Change the zoom factor and keep unchanged only the point hovered by the mouse.
+	 */
 	public void zoomOnMouse(double fact){
-		this.panel.zoomOnMouse(fact, xMouse, yMouse);
+		this.graphicPanel.zoomOnMouse(fact, xMouse, yMouse);
 	}
-
 
 	private class MyMouseMotionListener implements MouseMotionListener{
 
@@ -79,20 +88,21 @@ public class Window extends JFrame{
 			xMouse = e.getX();
 			yMouse = e.getY();
 		}
+
 		public void mouseDragged(MouseEvent e){
 
-			// TODO:  the left and right clicks may have other properties.
-			if(centerClickActive || rightClickActive){
-				/* The Y coordinate axis is oriented downwards in the window,
-				   upwards in the GraphicPanel. */
-				panel.translate(e.getX() - xMouse,
-						-(e.getY() - yMouse));
+			// TODO: the left and right clicks may have other properties.
+			if (centerClickActive || rightClickActive){
+				/*
+				 * The Y coordinate axis is oriented downwards in the window,
+				 * upwards in the GraphicPanel.
+				 */
+				graphicPanel.translate(e.getX() - xMouse, -(e.getY() - yMouse));
 			}
 			xMouse = e.getX();
 			yMouse = e.getY();
 		}
 	}
-
 
 	private class MyMouseWheelListener implements MouseWheelListener{
 
@@ -103,13 +113,12 @@ public class Window extends JFrame{
 		public void mouseWheelMoved(MouseWheelEvent e){
 			// System.out.print("wheel turn ");
 			double fact = 1.05;
-			if(e.getPreciseWheelRotation() < 0){
-//				 System.out.println("down");
+			if (e.getPreciseWheelRotation() < 0){
+				// System.out.println("down");
 				zoomOnMouse(fact);
-			}
-			else{
-//				 System.out.println("up");
-				zoomOnMouse(1/fact);
+			}else{
+				// System.out.println("up");
+				zoomOnMouse(1 / fact);
 			}
 		}
 	}
@@ -122,38 +131,39 @@ public class Window extends JFrame{
 
 		public void mouseClicked(MouseEvent e){
 		}
+
 		public void mouseEntered(MouseEvent e){
 			// System.out.println("Mouse entered");
 		}
+
 		public void mouseExited(MouseEvent e){
 			// System.out.println("Mouse exited");
 		}
+
 		public void mousePressed(MouseEvent e){
-//			if(e.getButton() == MouseEvent.BUTTON1){
-//				leftClickActive = true;
-//			}
-			if(e.getButton() == MouseEvent.BUTTON2){
+			// if(e.getButton() == MouseEvent.BUTTON1){
+			// leftClickActive = true;
+			// }
+			if (e.getButton() == MouseEvent.BUTTON2){
 				centerClickActive = true;
 			}
-			if(e.getButton() == MouseEvent.BUTTON3){
+			if (e.getButton() == MouseEvent.BUTTON3){
 				rightClickActive = true;
 			}
 		}
+
 		public void mouseReleased(MouseEvent e){
-//			if(e.getButton() == MouseEvent.BUTTON1){
-//				leftClickActive = false;
-//			}
-			if(e.getButton() == MouseEvent.BUTTON2){
+			// if(e.getButton() == MouseEvent.BUTTON1){
+			// leftClickActive = false;
+			// }
+			if (e.getButton() == MouseEvent.BUTTON2){
 				centerClickActive = false;
 			}
-			if(e.getButton() == MouseEvent.BUTTON3){
+			if (e.getButton() == MouseEvent.BUTTON3){
 				rightClickActive = false;
 			}
 		}
 
-
-
 	}
-
 
 }

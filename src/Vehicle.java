@@ -30,7 +30,7 @@ public class Vehicle{
 		this.angle = 0;
 		this.length = 1.0;
 		this.width = 0.4;
-		this.linearSpeed = 0.25;
+		this.linearSpeed = 0.2;
 		this.maxSpeed = 20;
 		this.collisionList = new ArrayList<>();
 
@@ -56,10 +56,14 @@ public class Vehicle{
 
 		this.net = new NeuralNet(this.sensorList, actuatorList);
 
-		// TESTS: adding a central neuron.
-		System.out.println("Adding a central neuron");
-		this.net.addNewCentralNeuron();
-		this.net.addNewCentralNeuron();
+		// // TESTS: adding a central neuron.
+		// System.out.println("Adding a central neuron");
+		// this.net.addNewCentralNeuron();
+		// this.net.addNewCentralNeuron();
+	}
+
+	public NeuralNet getNeuralNet(){
+		return this.net;
 	}
 
 	public void initSensors(int nbDirections, int nbLayers){
@@ -171,6 +175,19 @@ public class Vehicle{
 		this.angle += angleIncr;
 		for(Sensor s : this.sensorList){
 			s.computeWorldCoordinates(this.x, this.y, this.angle);
+		}
+	}
+
+	/**
+	 * Change the speed of the vehicle, and keep it within authorized bounds.
+	 * 
+	 * @param dV
+	 *            the speed increment.
+	 */
+	public void accelerate(double dV){
+		double newLinSpeed = this.linearSpeed + dV;
+		if (newLinSpeed <= maxSpeed && newLinSpeed >= -maxSpeed){
+			linearSpeed = newLinSpeed;
 		}
 	}
 
